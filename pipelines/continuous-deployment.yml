@@ -1,0 +1,39 @@
+---
+resources:
+- name: concourse-test-repo
+  type: git
+  source:
+    uri: https://github.com/arondeau/test-concourse
+    branch: master
+
+- name: resource-deploy-web-app
+  type: cf
+  source:
+    api: https://api.run.pivotal.io
+    username: XXX
+    password: XXX
+    organization: concourse-test
+    space: development
+    skip_cert_check: true
+
+jobs:
+- name: run-concourse-tests
+  serial: true
+  plan:
+  - aggregate:
+    - get: concourse-test-repo
+      trigger: true
+  - task: run-tests
+    config:
+      platform: linux
+      image: "docker:///rails"
+      inputs:
+        - name: concourse-test-repo
+      run:
+        path: bash
+        args: ["-c", "cd concourse-test-repo/concourse-test-app && bundle install && rspec"]
+  - put: resource-deploy-web-app
+    params:
+      manifest: concourse-test-repo/concourse-test-app/manifest.yml
+      path: concourse-test-repo/concourse-test-app
+
