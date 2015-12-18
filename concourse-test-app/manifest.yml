@@ -1,6 +1,6 @@
 ---
 applications:
-- name: concourse-test-app
+- name: concourse-test-app-development
   memory: 1024M
   instances: 1
   buildpack: ruby_buildpack
